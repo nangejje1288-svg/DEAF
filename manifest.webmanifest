@@ -1,0 +1,17 @@
+{
+  "name": "SHARINE — Accessible Communication",
+  "short_name": "SHARINE",
+  "description": "Accessible communication tools with captions, signboard, and safety alerts.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#101a2b",
+  "theme_color": "#101a2b",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

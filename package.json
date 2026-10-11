@@ -1,0 +1,13 @@
+{
+  "name": "open-voice",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local two-way communication app with captions and custom text-to-speech",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  }
+}

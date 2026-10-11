@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101a2b">
+    <meta name="description" content="Accessible communication tools with captions, signboard, offline support, and safety alerts.">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <title>SHARINE — Two-way communication</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --page: #101a2b;
+            --surface: #172438;
+            --surface-raised: #1d2d44;
+            --border: #354760;
+            --text: #f4f7fb;
+            --muted: #b8c5d7;
+            --accent: #66e3cc;
+            --accent-strong: #43cbb3;
+            --focus: #ffd166;
+            --danger: #ff8b8b;
+        }
+
+        body[data-theme="contrast"] {
+            color-scheme: dark;
+            --page: #000;
+            --surface: #000;
+            --surface-raised: #171717;
+            --border: #fff;
+            --text: #fff;
+            --muted: #fff;
+            --accent: #ffeb3b;
+            --accent-strong: #fff176;
+            --focus: #00e5ff;
+            --danger: #ff8a80;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--page);
+            background-image:
+                linear-gradient(135deg, rgb(16 26 43 / 76%), rgb(16 26 43 / 84%)),
+                url("images/image_92e6fca0.jpeg");
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.5;
+        }
+
+        button,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        button,
+        select {
+            min-height: 48px;
+        }
+
+        button {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        button:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 3px;
+        }
+
+        .page-shell {
+            width: min(1100px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 28px 0 36px;
+        }
+
+        header {
+            padding-bottom: 30px;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 38px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+
+        .try-button {
+            min-width: 92px;
+            background: var(--accent);
+            color: #10242d;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 750;
+            letter-spacing: 0.01em;
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 42px;
+            height: 42px;
+            place-items: center;
+            border-radius: 13px;
+            background: var(--accent);
+            color: #10242d;
+            font-size: 1.25rem;
+        }
+
+        .privacy-note {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .intro {
+            max-width: 700px;
+            margin: 0 0 28px;
+        }
+
+        .eyebrow {
+            margin: 0 0 8px;
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 750;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 3.1rem);
+            letter-spacing: -0.04em;
+            line-height: 1.12;
+        }
+
+        .intro-copy {
+            max-width: 620px;
+            margin: 14px 0 0;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .mode-picker {
+            margin: 0 0 28px;
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: rgba(23 36 56 / 92%);
+            box-shadow: 0 12px 32px rgb(0 0 0 / 12%);
+        }
+
+        .mode-picker h2 {
+            margin-bottom: 14px;
+        }
+
+        .mode-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mode-button {
+            min-height: 58px;
+            border-color: var(--border);
+            background: var(--surface-raised);
+            color: var(--text);
+            text-align: left;
+        }
+
+        .mode-button[aria-pressed="true"] {
+            border-color: var(--accent);
+            background: rgba(102 227 204 / 14%);
+            box-shadow: inset 0 0 0 1px var(--accent);
+        }
+
+        .mode-help {
+            margin: 12px 0 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .accessibility-actions,
+        .safety-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin: 0 0 24px;
+        }
+
+        .safety-card {
+            min-width: 0;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: rgba(23 36 56 / 94%);
+        }
+
+        body[data-theme="contrast"] .safety-card,
+        body[data-theme="contrast"] .mode-picker,
+        body[data-theme="contrast"] .tool-card,
+        body[data-theme="contrast"] .caption-box,
+        body[data-theme="contrast"] .info-card {
+            background: #000;
+        }
+
+        .safety-card h2 {
+            margin-bottom: 8px;
+        }
+
+        .safety-card p {
+            color: var(--muted);
+        }
+
+        .safety-card .field-label {
+            margin-top: 14px;
+        }
+
+        .safety-card textarea {
+            min-height: 92px;
+            padding: 12px;
+            resize: vertical;
+        }
+
+        .hazard-status {
+            min-height: 54px;
+            margin: 12px 0;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--page);
+            font-weight: 750;
+        }
+
+        .hazard-status[data-kind="alert"] {
+            border-color: var(--focus);
+            background: #342800;
+            color: #fff;
+        }
+
+        .safety-choices {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .safety-choices button {
+            min-height: 56px;
+            padding: 8px;
+            border-color: var(--border);
+            background: var(--surface-raised);
+            color: var(--text);
+        }
+
+        .check-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 12px 0;
+            color: var(--muted);
+        }
+
+        .check-row input {
+            width: 22px;
+            height: 22px;
+            flex: 0 0 auto;
+            accent-color: var(--accent);
+        }
+
+        .signboard-overlay {
+            position: fixed;
+            z-index: 10;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 24px;
+            background: #000;
+            color: #fff;
+            text-align: center;
+        }
+
+        .signboard-overlay[hidden] {
+            display: none;
+        }
+
+        .signboard-toolbar {
+            position: absolute;
+            inset: 16px 16px auto;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .signboard-message {
+            max-width: 100%;
+            margin: 0;
+            font-size: clamp(3rem, 14vw, 11rem);
+            font-weight: 850;
+            line-height: 1.08;
+            overflow-wrap: anywhere;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        body[data-alert="true"] {
+            animation: hazard-shake 220ms linear 5;
+        }
+
+        @keyframes hazard-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-7px); }
+            75% { transform: translateX(7px); }
+        }
+
+        .showcase {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.9fr);
+            gap: 22px;
+            margin: 0 0 28px;
+        }
+
+        .photo-card {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255 255 255 / 10%);
+            border-radius: 24px;
+            background: rgba(15 24 39 / 85%);
+            box-shadow: 0 22px 40px rgb(0 0 0 / 18%);
+        }
+
+        .photo-card img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-card-large {
+            min-height: 360px;
+        }
+
+        .photo-overlay {
+            position: absolute;
+            inset: auto 18px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 16px 18px;
+            border: 1px solid rgba(255 255 255 / 12%);
+            border-radius: 16px;
+            background: rgba(17 29 46 / 78%);
+            backdrop-filter: blur(8px);
+        }
+
+        .overlay-chip {
+            display: inline-flex;
+            width: fit-content;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(102 227 204 / 18%);
+            color: var(--accent);
+            font-size: 0.74rem;
+            font-weight: 750;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .photo-overlay strong {
+            font-size: clamp(1.15rem, 2vw, 1.6rem);
+            line-height: 1.3;
+        }
+
+        .photo-stack {
+            display: grid;
+            gap: 22px;
+        }
+
+        .photo-card-small {
+            min-height: 220px;
+        }
+
+        .info-card {
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: rgba(23 36 56 / 88%);
+            box-shadow: 0 12px 32px rgb(0 0 0 / 12%);
+        }
+
+        .secondary-eyebrow {
+            margin-bottom: 8px;
+        }
+
+        .info-card h3 {
+            margin: 0 0 10px;
+            font-size: clamp(1.3rem, 2vw, 1.9rem);
+            line-height: 1.25;
+        }
+
+        .info-card p:last-child {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .tools-grid[data-mode="deaf"],
+        .tools-grid[data-mode="hearing"] {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .tool-card[hidden] {
+            display: none;
+        }
+
+        .tool-card {
+            display: flex;
+            min-width: 0;
+            flex-direction: column;
+            padding: 24px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: var(--surface);
+            box-shadow: 0 12px 32px rgb(0 0 0 / 12%);
+        }
+
+        .card-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            display: grid;
+            width: 44px;
+            height: 44px;
+            flex: 0 0 auto;
+            place-items: center;
+            border-radius: 13px;
+            background: var(--surface-raised);
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            line-height: 1.35;
+        }
+
+        .card-description {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 0.93rem;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 650;
+        }
+
+        .language-row {
+            margin-bottom: 14px;
+        }
+
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--page);
+            color: var(--text);
+        }
+
+        select {
+            padding: 10px 12px;
+        }
+
+        .caption-box {
+            display: flex;
+            min-height: 230px;
+            flex: 1;
+            flex-direction: column;
+            margin-bottom: 16px;
+            padding: 18px;
+            overflow-wrap: anywhere;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #111d2e;
+        }
+
+        .caption-placeholder {
+            margin: auto 0;
+            color: var(--muted);
+            font-size: 1.05rem;
+            text-align: center;
+        }
+
+        #final-text {
+            white-space: pre-wrap;
+            font-size: clamp(1.2rem, 2.4vw, 1.65rem);
+            font-weight: 650;
+            line-height: 1.55;
+        }
+
+        #interim-text {
+            margin-top: 8px;
+            color: var(--accent);
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            font-style: italic;
+            white-space: pre-wrap;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .primary-button {
+            background: var(--accent);
+            color: #10242d;
+        }
+
+        .primary-button:hover:not(:disabled) {
+            background: var(--accent-strong);
+        }
+
+        .secondary-button {
+            border-color: var(--border);
+            background: var(--surface-raised);
+            color: var(--text);
+        }
+
+        .listening-button {
+            border-color: #9d4646;
+            background: #632f39;
+            color: #fff;
+        }
+
+        .status {
+            min-height: 24px;
+            margin: 12px 0 0;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .status[data-kind="error"] {
+            color: var(--danger);
+        }
+
+        .status[data-kind="success"] {
+            color: var(--accent);
+        }
+
+        .message-input {
+            min-height: 170px;
+            padding: 14px;
+            resize: vertical;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .message-input::placeholder {
+            color: #91a1b6;
+        }
+
+        .voice-row {
+            margin: 16px 0;
+        }
+
+        .helper-text {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        .voice-setup {
+            margin: 18px 0;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #111d2e;
+        }
+
+        .voice-setup summary {
+            color: var(--text);
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .voice-setup-content {
+            display: grid;
+            gap: 12px;
+            padding-top: 14px;
+        }
+
+        .voice-setup-content p {
+            margin: 0;
+        }
+
+        .voice-setup input[type="text"],
+        .voice-setup input[type="file"] {
+            width: 100%;
+            color: var(--text);
+            font: inherit;
+        }
+
+        .voice-setup input[type="text"] {
+            min-height: 44px;
+            padding: 9px 11px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: var(--page);
+        }
+
+        .voice-setup input[type="file"]::file-selector-button {
+            min-height: 40px;
+            margin-right: 10px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface-raised);
+            color: var(--text);
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .consent-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .consent-row input {
+            width: 20px;
+            height: 20px;
+            flex: 0 0 auto;
+            accent-color: var(--accent);
+        }
+
+        .sample-preview {
+            width: 100%;
+        }
+
+        .danger-button {
+            border-color: #9d4646;
+            background: #442832;
+            color: #ffdada;
+        }
+
+        footer {
+            margin-top: 24px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        @media (max-width: 760px) {
+            .page-shell {
+                width: min(100% - 28px, 560px);
+                padding-top: 18px;
+            }
+
+            .header-top {
+                align-items: flex-start;
+                margin-bottom: 28px;
+            }
+
+            .privacy-note {
+                max-width: 145px;
+                text-align: right;
+            }
+
+            .mode-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .showcase {
+                grid-template-columns: 1fr;
+            }
+
+            .accessibility-actions,
+            .safety-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .photo-card-large {
+                min-height: 260px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tool-card {
+                padding: 20px;
+            }
+
+            .caption-box {
+                min-height: 190px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .brand {
+                font-size: 1rem;
+            }
+
+            .privacy-note {
+                font-size: 0.78rem;
+            }
+
+            .button-row > button {
+                flex: 1 1 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page-shell">
+        <header>
+            <div class="header-top">
+                <div class="brand">
+                    <span class="brand-mark" aria-hidden="true">↔</span>
+                    <span>SHARINE</span>
+                </div>
+                <div class="header-actions">
+                    <span class="privacy-note">A simple tool for clearer conversations</span>
+                    <button id="open-signboard-btn" class="secondary-button" type="button">Show message</button>
+                    <button id="theme-toggle" class="secondary-button" type="button" aria-pressed="false">High contrast</button>
+                    <button id="try-button" class="try-button" type="button">Try</button>
+                </div>
+            </div>
+
+            <section class="intro" aria-labelledby="page-title">
+                <p class="eyebrow">Two-way communication</p>
+                <h1 id="page-title">Your words, understood.</h1>
+                <p class="intro-copy">Read spoken words as live captions, or type a message and have your device or custom voice say it out loud.</p>
+            </section>
+
+            <section class="showcase" aria-label="Accessibility communication imagery">
+                <div class="photo-card photo-card-large">
+                    <img src="images/image_92e6fca0.jpeg" alt="Two people communicating with clear visual support">
+                    <div class="photo-overlay">
+                        <span class="overlay-chip">Live captions</span>
+                        <strong>Clearer communication, every day.</strong>
+                    </div>
+                </div>
+
+                <div class="photo-stack">
+                    <div class="photo-card photo-card-small">
+                        <img src="images/image_7c4f34c7.jpg" alt="A person using sign language during conversation">
+                    </div>
+                    <div class="info-card">
+                        <p class="eyebrow secondary-eyebrow">Designed for connection</p>
+                        <h3>Professional, calm, and easy to use.</h3>
+                        <p>Bring speech, text, and voice together in one simple experience built for real conversations.</p>
+                    </div>
+                </div>
+            </section>
+        </header>
+
+        <section id="mode-picker" class="mode-picker" aria-labelledby="mode-title">
+            <h2 id="mode-title">How would you like to communicate?</h2>
+            <div class="mode-buttons" role="group" aria-label="Choose your communication mode">
+                <button id="deaf-mode-btn" class="mode-button" type="button" data-mode="deaf" aria-pressed="false">
+                    I'm deaf or hard of hearing
+                </button>
+                <button id="hearing-mode-btn" class="mode-button" type="button" data-mode="hearing" aria-pressed="false">
+                    I'm hearing
+                </button>
+            </div>
+            <p id="mode-help" class="mode-help" role="status" aria-live="polite">Choose an option to show the tool that best fits your conversation.</p>
+        </section>
+
+        <section class="accessibility-actions" aria-label="Quick accessibility tools">
+            <div class="safety-card">
+                <h2>Signboard</h2>
+                <label class="field-label" for="signboard-input">Message to show</label>
+                <textarea id="signboard-input" maxlength="180" aria-describedby="signboard-help">I am deaf or hard of hearing. Please type to communicate.</textarea>
+                <p id="signboard-help" class="helper-text">Show this message in very large, high-contrast text. You can also open it with the Show message button above.</p>
+                <div class="safety-choices" aria-label="Quick signboard messages">
+                    <button type="button" data-signboard-text="Please type to communicate.">⌨️ Please type</button>
+                    <button type="button" data-signboard-text="Where is the train station?">🚉 Find the station</button>
+                    <button type="button" data-signboard-text="I need help.">🆘 I need help</button>
+                    <button type="button" data-signboard-text="Please face me when speaking.">👀 Face me</button>
+                </div>
+            </div>
+
+            <div class="safety-card">
+                <h2>Silent emergency message</h2>
+                <p>Prepare a text with your location to share yourself. This app cannot contact or dispatch emergency services.</p>
+                <div class="safety-choices" aria-label="Emergency message type">
+                    <button type="button" data-emergency-text="I need medical assistance.">🩺 Medical</button>
+                    <button type="button" data-emergency-text="There may be a fire. I need help.">🔥 Fire</button>
+                    <button type="button" data-emergency-text="I feel unsafe and need help.">🛡️ Unsafe</button>
+                    <button type="button" data-emergency-text="I need emergency assistance.">🆘 General</button>
+                </div>
+                <label class="field-label" for="emergency-message">Message to share</label>
+                <textarea id="emergency-message" maxlength="500">I need emergency assistance.</textarea>
+                <div class="button-row">
+                    <button id="get-location-btn" class="secondary-button" type="button">Add my location</button>
+                    <button id="share-emergency-btn" class="primary-button" type="button">Share message</button>
+                </div>
+                <p id="emergency-status" class="status" role="status" aria-live="polite">Location is only accessed when you choose Add my location.</p>
+                <p class="helper-text">Sharing requires a working connection and your confirmation in the device share sheet. In immediate danger, use your local emergency number or ask someone nearby.</p>
+            </div>
+        </section>
+
+        <section class="safety-grid" aria-label="Sound awareness and call accessibility">
+            <div class="safety-card">
+                <h2>Sound awareness (experimental)</h2>
+                <p>This on-device monitor looks for loud or high-pitched sounds. It cannot identify or reliably detect fire alarms, sirens, carbon monoxide alarms, or crying. Do not rely on it for safety.</p>
+                <div id="hazard-status" class="hazard-status" role="status" aria-live="assertive">Sound monitoring is off.</div>
+                <div class="button-row">
+                    <button id="start-hazard-btn" class="primary-button" type="button">Start sound monitoring</button>
+                    <button id="stop-hazard-btn" class="secondary-button" type="button" hidden>Stop monitoring</button>
+                    <button id="flash-enable-btn" class="secondary-button" type="button">Enable camera flash alerts</button>
+                </div>
+                <label class="check-row" for="shake-alert-toggle">
+                    <input id="shake-alert-toggle" type="checkbox" checked>
+                    <span>Use screen shake for sound alerts</span>
+                </label>
+                <p id="flash-status" class="helper-text" role="status">Flash availability depends on your camera and browser.</p>
+            </div>
+            <div class="safety-card">
+                <h2>Calls and offline use</h2>
+                <p>Offline access keeps this page and these tools available after the first visit. Offline transcription works only in browsers with a supported on-device speech model.</p>
+                <p>Carrier real-time text (RTT) and automatic speaker identification are not exposed to this browser app. Use your phone's built-in RTT/accessibility settings for calls. Speaker labels below are manual.</p>
+                <p id="offline-status" class="status" role="status" aria-live="polite">Offline app shell is available after a successful online visit on a supported browser.</p>
+            </div>
+        </section>
+
+        <div id="tools-grid" class="tools-grid">
+            <section id="listen-card" class="tool-card" aria-labelledby="listen-title">
+                <div class="card-heading">
+                    <span class="card-icon" aria-hidden="true">〰</span>
+                    <div>
+                        <h2 id="listen-title">Speech to text</h2>
+                        <p class="card-description">Turn nearby speech into readable captions.</p>
+                    </div>
+                </div>
+
+                <div class="language-row">
+                    <label class="field-label" for="recognition-language">Spoken language</label>
+                    <select id="recognition-language">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-GB">English (UK)</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="it-IT">Italian</option>
+                        <option value="pt-BR">Portuguese (Brazil)</option>
+                        <option value="ar-SA">Arabic</option>
+                        <option value="hi-IN">Hindi</option>
+                        <option value="ja-JP">Japanese</option>
+                        <option value="zh-CN">Chinese (Mandarin)</option>
+                    </select>
+                </div>
+                <div class="language-row">
+                    <label class="field-label" for="transcription-mode">Transcription processing</label>
+                    <select id="transcription-mode">
+                        <option value="browser">Browser default (may use a network service)</option>
+                        <option value="offline">On-device only (supported browsers)</option>
+                    </select>
+                    <button id="prepare-offline-btn" class="secondary-button" type="button" hidden>Prepare offline language</button>
+                    <p class="helper-text">On-device processing and language packs depend on browser support. Live captions do not identify speakers automatically.</p>
+                </div>
+                <div class="language-row">
+                    <label class="field-label" for="speaker-label">Manual speaker label</label>
+                    <select id="speaker-label">
+                        <option value="">No speaker label</option>
+                        <option value="Person 1">Person 1</option>
+                        <option value="Person 2">Person 2</option>
+                    </select>
+                </div>
+
+                <div class="caption-box" aria-label="Live speech transcript">
+                    <p id="caption-placeholder" class="caption-placeholder">Your captions will appear here when you start listening.</p>
+                    <div id="final-text" aria-live="polite" aria-atomic="false"></div>
+                    <div id="interim-text" aria-live="off"></div>
+                </div>
+
+                <div class="button-row">
+                    <button id="start-btn" class="primary-button" type="button">Start listening</button>
+                    <button id="clear-btn" class="secondary-button" type="button">Clear captions</button>
+                </div>
+                <p id="listen-status" class="status" role="status" aria-live="polite">Ready when you are.</p>
+            </section>
+
+            <section id="speak-card" class="tool-card" aria-labelledby="speak-title">
+                <div class="card-heading">
+                    <span class="card-icon" aria-hidden="true">🔊</span>
+                    <div>
+                        <h2 id="speak-title">Text to speech</h2>
+                        <p class="card-description">Type a message and have your device speak it.</p>
+                    </div>
+                </div>
+
+                <label class="field-label" for="text-to-speak">Your message</label>
+                <textarea id="text-to-speak" class="message-input" placeholder="Type your message here…" spellcheck="true"></textarea>
+
+                <details class="voice-setup">
+                    <summary>Set up my voice</summary>
+                    <div class="voice-setup-content">
+                        <p class="helper-text">Create a voice from your recording. You can record a sample now or choose an audio file. A quiet room and clear speech help.</p>
+                        <label class="field-label" for="voice-name">Name for your voice</label>
+                        <input id="voice-name" type="text" maxlength="60" value="My voice" autocomplete="off">
+                        <div class="button-row">
+                            <button id="record-btn" class="secondary-button" type="button">Record a sample</button>
+                            <button id="stop-record-btn" class="secondary-button" type="button" disabled>Stop recording</button>
+                        </div>
+                        <label class="field-label" for="voice-file">Or choose an audio recording</label>
+                        <input id="voice-file" type="file" accept=".mp3,.wav,.m4a,.aac,.ogg,.webm,audio/*">
+                        <p class="helper-text">Supported formats: MP3, WAV, M4A, AAC, OGG, and WebM. Maximum file size: 10 MB.</p>
+                        <audio id="sample-preview" class="sample-preview" controls hidden></audio>
+                        <label class="consent-row" for="voice-consent">
+                            <input id="voice-consent" type="checkbox">
+                            <span>I confirm this is my voice or I have permission to clone it. I understand the recording is sent to ElevenLabs to create my voice.</span>
+                        </label>
+                        <div class="button-row">
+                            <button id="create-voice-btn" class="primary-button" type="button">Create my voice</button>
+                            <button id="delete-voice-btn" class="danger-button" type="button" hidden>Delete my cloned voice</button>
+                        </div>
+                        <p id="voice-setup-status" class="status" role="status" aria-live="polite">Your recording is sent to ElevenLabs only when you choose Create my voice.</p>
+                    </div>
+                </details>
+
+                <div class="voice-row">
+                    <label class="field-label" for="voice-select">Voice</label>
+                    <select id="voice-select" aria-describedby="voice-help">
+                        <option value="">System default voice</option>
+                    </select>
+                    <p id="voice-help" class="helper-text">Available voices depend on your device and browser.</p>
+                </div>
+
+                <div class="button-row">
+                    <button id="speak-btn" class="primary-button" type="button">Speak message</button>
+                </div>
+                <p id="speak-status" class="status" role="status" aria-live="polite">Your message stays in the box so you can edit or repeat it.</p>
+            </section>
+        </div>
+
+        <footer>Microphone access is handled by your browser. Custom voice samples and speech are sent securely to ElevenLabs.</footer>
+    </main>
+
+    <div id="signboard-overlay" class="signboard-overlay" role="dialog" aria-modal="true" aria-labelledby="signboard-title" tabindex="-1" hidden>
+        <div class="signboard-toolbar">
+            <button id="close-signboard-btn" class="secondary-button" type="button">Close signboard</button>
+        </div>
+        <h2 id="signboard-title" class="visually-hidden">Message signboard</h2>
+        <p id="signboard-message" class="signboard-message"></p>
+    </div>
+
+    <script>
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const startBtn = document.getElementById("start-btn");
+        const clearBtn = document.getElementById("clear-btn");
+        const finalText = document.getElementById("final-text");
+        const interimText = document.getElementById("interim-text");
+        const captionPlaceholder = document.getElementById("caption-placeholder");
+        const listenStatus = document.getElementById("listen-status");
+        const recognitionLanguage = document.getElementById("recognition-language");
+        const modeButtons = document.querySelectorAll(".mode-button");
+        const modeHelp = document.getElementById("mode-help");
+        const toolsGrid = document.getElementById("tools-grid");
+        const listenCard = document.getElementById("listen-card");
+        const speakCard = document.getElementById("speak-card");
+        const tryButton = document.getElementById("try-button");
+        const modePicker = document.getElementById("mode-picker");
+        const themeToggle = document.getElementById("theme-toggle");
+        const signboardInput = document.getElementById("signboard-input");
+        const signboardOverlay = document.getElementById("signboard-overlay");
+        const signboardMessage = document.getElementById("signboard-message");
+        const openSignboardBtn = document.getElementById("open-signboard-btn");
+        const closeSignboardBtn = document.getElementById("close-signboard-btn");
+        const emergencyMessage = document.getElementById("emergency-message");
+        const emergencyStatus = document.getElementById("emergency-status");
+        const offlineStatus = document.getElementById("offline-status");
+        const transcriptionMode = document.getElementById("transcription-mode");
+        const prepareOfflineBtn = document.getElementById("prepare-offline-btn");
+        const speakerLabel = document.getElementById("speaker-label");
+        let recognition;
+        let isListening = false;
+        let offlineLanguageReady = false;
+        let previousSpeaker = "";
+        let emergencyLocation = "";
+        let flashTrack = null;
+        let flashGeneration = 0;
+        let flashAlertInProgress = false;
+        let hazardStream = null;
+        let hazardAudioContext = null;
+        let hazardAnalyser = null;
+        let hazardTimer = null;
+        let consecutiveSoundFrames = 0;
+        let lastHazardAlert = 0;
+
+        function applyTheme(highContrast) {
+            document.body.dataset.theme = highContrast ? "contrast" : "dark";
+            themeToggle.setAttribute("aria-pressed", String(highContrast));
+            themeToggle.textContent = highContrast ? "Standard dark mode" : "High contrast";
+            localStorage.setItem("openVoice.highContrast", String(highContrast));
+        }
+
+        applyTheme(localStorage.getItem("openVoice.highContrast") === "true");
+        themeToggle.addEventListener("click", () => {
+            applyTheme(document.body.dataset.theme !== "contrast");
+        });
+
+        function closeSignboard() {
+            signboardOverlay.hidden = true;
+            if (document.fullscreenElement === signboardOverlay && document.exitFullscreen) {
+                void document.exitFullscreen().catch((error) => {
+                    console.error("Could not exit signboard full screen:", error);
+                });
+            }
+            openSignboardBtn.focus();
+        }
+
+        function openSignboard() {
+            signboardMessage.textContent = signboardInput.value.trim() || "Please type to communicate.";
+            signboardOverlay.hidden = false;
+            closeSignboardBtn.focus();
+            if (signboardOverlay.requestFullscreen) {
+                void signboardOverlay.requestFullscreen().catch((error) => {
+                    console.error("Could not enter signboard full screen:", error);
+                });
+            }
+        }
+
+        openSignboardBtn.addEventListener("click", openSignboard);
+        closeSignboardBtn.addEventListener("click", closeSignboard);
+        document.querySelectorAll("[data-signboard-text]").forEach((button) => {
+            button.addEventListener("click", () => {
+                signboardInput.value = button.dataset.signboardText;
+                openSignboard();
+            });
+        });
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && !signboardOverlay.hidden) {
+                closeSignboard();
+            }
+        });
+
+        document.querySelectorAll("[data-emergency-text]").forEach((button) => {
+            button.addEventListener("click", () => {
+                emergencyMessage.value = button.dataset.emergencyText;
+                emergencyMessage.focus();
+            });
+        });
+
+        document.getElementById("get-location-btn").addEventListener("click", () => {
+            if (!navigator.geolocation) {
+                emergencyStatus.textContent = "Location is not available in this browser. You can still edit and share the message without it.";
+                emergencyStatus.dataset.kind = "error";
+                return;
+            }
+            emergencyStatus.textContent = "Requesting your location. Allow access in the browser prompt if you want to include it.";
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude, accuracy } = position.coords;
+                emergencyLocation = `Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)} (accuracy about ${Math.round(accuracy)} m). Map: https://maps.google.com/?q=${latitude},${longitude}`;
+                emergencyStatus.textContent = `Location added: ${latitude.toFixed(5)}, ${longitude.toFixed(5)} (accuracy about ${Math.round(accuracy)} m). It will be included when you share.`;
+                emergencyStatus.dataset.kind = "success";
+            }, (error) => {
+                const reasons = {
+                    "PERMISSION_DENIED": "Location permission was denied.",
+                    "POSITION_UNAVAILABLE": "Your location could not be determined.",
+                    "TIMEOUT": "The location request timed out."
+                };
+                emergencyStatus.textContent = `${reasons[error.code] || "Could not get your location."} You can still share a message without it.`;
+                emergencyStatus.dataset.kind = "error";
+            }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+        });
+
+        document.getElementById("share-emergency-btn").addEventListener("click", async () => {
+            const text = [emergencyMessage.value.trim(), emergencyLocation].filter(Boolean).join("\n");
+            if (!text) {
+                emergencyStatus.textContent = "Enter a message before sharing.";
+                emergencyStatus.dataset.kind = "error";
+                return;
+            }
+            try {
+                if (navigator.share) {
+                    await navigator.share({ title: "Emergency assistance message", text });
+                    emergencyStatus.textContent = "Share sheet closed. Check that the message reached the intended person or service.";
+                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(text);
+                    emergencyStatus.textContent = "Message copied. Choose a contact or service and send it yourself.";
+                } else {
+                    throw new Error("Sharing and clipboard are not available in this browser.");
+                }
+                emergencyStatus.dataset.kind = "success";
+            } catch (error) {
+                emergencyStatus.textContent = error.name === "AbortError"
+                    ? "Sharing was cancelled. No message was sent."
+                    : `${error.message || "Could not share the message."} You can copy or type it into another app.`;
+                emergencyStatus.dataset.kind = "error";
+            }
+        });
+
+        tryButton.addEventListener("click", () => {
+            modePicker.scrollIntoView({
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+                block: "start"
+            });
+        });
+
+        function selectMode(mode) {
+            const isDeafMode = mode === "deaf";
+            toolsGrid.dataset.mode = mode;
+            listenCard.hidden = isDeafMode;
+            speakCard.hidden = !isDeafMode;
+
+            modeButtons.forEach((button) => {
+                button.setAttribute("aria-pressed", String(button.dataset.mode === mode));
+            });
+
+            modeHelp.textContent = isDeafMode
+                ? "Type a message below and choose Speak message to have your device say it aloud."
+                : "Spoken words will appear as captions. Tap Start listening when you're ready to use the microphone.";
+
+            if (isDeafMode && isListening && recognition) {
+                recognition.stop();
+            }
+
+            toolsGrid.scrollIntoView({
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+                block: "start"
+            });
+        }
+
+        modeButtons.forEach((button) => {
+            button.addEventListener("click", () => selectMode(button.dataset.mode));
+        });
+
+        function setListenStatus(message, kind) {
+            listenStatus.textContent = message;
+            listenStatus.dataset.kind = kind || "";
+        }
+
+        function updateCaptionPlaceholder() {
+            captionPlaceholder.hidden = Boolean(finalText.textContent || interimText.textContent);
+        }
+
+        async function prepareOfflineLanguage() {
+            const available = SpeechRecognition && SpeechRecognition.available;
+            const install = SpeechRecognition && SpeechRecognition.install;
+            if (!available || !install || !recognition || !("processLocally" in recognition)) {
+                setListenStatus("This browser does not support on-device speech recognition. Choose Browser default only if you accept that it may use a network service.", "error");
+                return false;
+            }
+
+            prepareOfflineBtn.disabled = true;
+            setListenStatus("Checking the on-device language pack…", "");
+            try {
+                let state = await available({ langs: [recognitionLanguage.value], processLocally: true });
+                if (state === "downloadable") {
+                    setListenStatus("Downloading the on-device language pack…", "");
+                    const installed = await install({ langs: [recognitionLanguage.value] });
+                    if (!installed) {
+                        throw new Error("The browser could not install this language pack.");
+                    }
+                    state = await available({ langs: [recognitionLanguage.value], processLocally: true });
+                }
+                if (state !== "available") {
+                    throw new Error(state === "downloading"
+                        ? "The language pack is already downloading. Try again when it is ready."
+                        : "An on-device language pack is not available for this language in your browser.");
+                }
+                offlineLanguageReady = true;
+                setListenStatus("On-device recognition is ready for this language. It will not fall back to a network service.", "success");
+                return true;
+            } catch (error) {
+                offlineLanguageReady = false;
+                setListenStatus(error.message || "Could not prepare on-device recognition.", "error");
+                return false;
+            } finally {
+                prepareOfflineBtn.disabled = false;
+            }
+        }
+
+        prepareOfflineBtn.hidden = !(SpeechRecognition &&
+            typeof SpeechRecognition.available === "function" &&
+            typeof SpeechRecognition.install === "function" &&
+            recognition && "processLocally" in recognition);
+        prepareOfflineBtn.addEventListener("click", () => {
+            void prepareOfflineLanguage();
+        });
+
+        transcriptionMode.addEventListener("change", () => {
+            if (transcriptionMode.value === "offline" && !prepareOfflineBtn.hidden && !offlineLanguageReady) {
+                setListenStatus("Prepare the on-device language pack before starting. It stays on this device.", "");
+            } else if (transcriptionMode.value === "offline" && prepareOfflineBtn.hidden) {
+                setListenStatus("This browser does not expose on-device recognition. Offline transcription is unavailable here.", "error");
+            } else {
+                setListenStatus("Browser default recognition may send audio to a network service.", "");
+            }
+        });
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = recognitionLanguage.value;
+            prepareOfflineBtn.hidden = !(typeof SpeechRecognition.available === "function" &&
+                typeof SpeechRecognition.install === "function" && "processLocally" in recognition);
+
+            recognitionLanguage.addEventListener("change", () => {
+                recognition.lang = recognitionLanguage.value;
+                offlineLanguageReady = false;
+                if (isListening) {
+                    recognition.stop();
+                    setListenStatus("Language changed. Start listening again to continue.", "");
+                }
+            });
+
+            startBtn.addEventListener("click", async () => {
+                if (isListening) {
+                    recognition.stop();
+                    return;
+                }
+
+                recognition.lang = recognitionLanguage.value;
+                if (transcriptionMode.value === "offline") {
+                    if (!offlineLanguageReady && !(await prepareOfflineLanguage())) {
+                        return;
+                    }
+                    recognition.processLocally = true;
+                } else if ("processLocally" in recognition) {
+                    recognition.processLocally = false;
+                }
+                try {
+                    recognition.start();
+                } catch (error) {
+                    setListenStatus("Could not start listening. Please try again.", "error");
+                }
+            });
+
+            recognition.addEventListener("start", () => {
+                isListening = true;
+                startBtn.textContent = "Stop listening";
+                startBtn.classList.add("listening-button");
+                setListenStatus("Listening now. Speak clearly near your device microphone.", "success");
+            });
+
+            recognition.addEventListener("end", () => {
+                isListening = false;
+                startBtn.textContent = "Start listening";
+                startBtn.classList.remove("listening-button");
+                if (listenStatus.dataset.kind !== "error") {
+                    setListenStatus("Listening stopped.", "");
+                }
+            });
+
+            recognition.addEventListener("result", (event) => {
+                let interimTranscript = "";
+
+                for (let i = event.resultIndex; i < event.results.length; i += 1) {
+                    const result = event.results[i];
+                    const transcript = result[0] && result[0].transcript;
+                    if (!transcript) {
+                        continue;
+                    }
+                    if (result.isFinal) {
+                        const currentSpeaker = speakerLabel.value;
+                        if (currentSpeaker && currentSpeaker !== previousSpeaker) {
+                            finalText.textContent += `${currentSpeaker}: `;
+                        }
+                        finalText.textContent += `${transcript} `;
+                        previousSpeaker = currentSpeaker;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                interimText.textContent = interimTranscript;
+                updateCaptionPlaceholder();
+                document.querySelector(".caption-box").scrollTop = document.querySelector(".caption-box").scrollHeight;
+            });
+
+            recognition.addEventListener("error", (event) => {
+                const messages = {
+                    "not-allowed": "Microphone access was denied. Allow microphone access in your browser settings and try again.",
+                    "service-not-allowed": "Speech recognition is blocked by your browser. Try another supported browser.",
+                    "no-speech": "No speech was detected. Try speaking a little closer to the microphone.",
+                    "audio-capture": "No microphone was found. Connect a microphone and try again.",
+                    "network": "Speech recognition needs a network connection. Check your connection and try again."
+                };
+                setListenStatus(messages[event.error] || `Speech recognition error: ${event.error}.`, "error");
+            });
+        } else {
+            startBtn.disabled = true;
+            setListenStatus("Speech recognition is not available in this browser. Try a supported browser such as Chrome.", "error");
+        }
+
+        clearBtn.addEventListener("click", () => {
+            finalText.textContent = "";
+            interimText.textContent = "";
+            previousSpeaker = "";
+            updateCaptionPlaceholder();
+            setListenStatus("Captions cleared.", "");
+        });
+
+        const hazardStatus = document.getElementById("hazard-status");
+        const flashStatus = document.getElementById("flash-status");
+        const startHazardBtn = document.getElementById("start-hazard-btn");
+        const stopHazardBtn = document.getElementById("stop-hazard-btn");
+        const flashEnableBtn = document.getElementById("flash-enable-btn");
+        const shakeAlertToggle = document.getElementById("shake-alert-toggle");
+
+        function setTorch(enabled) {
+            if (!flashTrack) {
+                return Promise.resolve();
+            }
+            return flashTrack.applyConstraints({ advanced: [{ torch: enabled }] });
+        }
+
+        async function flashAlert() {
+            if (!flashTrack || flashAlertInProgress) {
+                return;
+            }
+            flashAlertInProgress = true;
+            const generation = flashGeneration;
+            try {
+                for (let pulse = 0; pulse < 3 && generation === flashGeneration && flashTrack; pulse += 1) {
+                    await setTorch(true);
+                    await new Promise((resolve) => setTimeout(resolve, 250));
+                    await setTorch(false);
+                    await new Promise((resolve) => setTimeout(resolve, 180));
+                }
+            } catch (error) {
+                flashStatus.textContent = `Camera flash alert failed: ${error.message || "flash control is unavailable"}.`;
+                flashStatus.dataset.kind = "error";
+            } finally {
+                flashAlertInProgress = false;
+            }
+        }
+
+        flashEnableBtn.addEventListener("click", async () => {
+            if (flashTrack) {
+                flashGeneration += 1;
+                try {
+                    await setTorch(false);
+                } catch (error) {
+                    console.error("Could not turn off the camera torch:", error);
+                }
+                flashTrack.stop();
+                flashTrack = null;
+                flashEnableBtn.textContent = "Enable camera flash alerts";
+                flashStatus.textContent = "Camera flash alerts are off.";
+                flashStatus.dataset.kind = "";
+                return;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                flashStatus.textContent = "Camera access is not available in this browser.";
+                flashStatus.dataset.kind = "error";
+                return;
+            }
+            flashEnableBtn.disabled = true;
+            try {
+                const cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" } },
+                    audio: false
+                });
+                const track = cameraStream.getVideoTracks()[0];
+                const capabilities = track && track.getCapabilities ? track.getCapabilities() : {};
+                if (!track || !capabilities.torch) {
+                    cameraStream.getTracks().forEach((streamTrack) => streamTrack.stop());
+                    throw new Error("This camera does not expose controllable flash hardware.");
+                }
+                flashTrack = track;
+                flashEnableBtn.textContent = "Disable camera flash alerts";
+                flashStatus.textContent = "Flash is enabled for sound alerts. Camera access remains active until you disable it.";
+                flashStatus.dataset.kind = "success";
+            } catch (error) {
+                flashStatus.textContent = `${error.message || "Could not enable the camera flash."} Sound monitoring can still run without flash.`;
+                flashStatus.dataset.kind = "error";
+            } finally {
+                flashEnableBtn.disabled = false;
+            }
+        });
+
+        function announceHazard() {
+            const now = Date.now();
+            if (now - lastHazardAlert < 8000) {
+                return;
+            }
+            lastHazardAlert = now;
+            hazardStatus.textContent = "Potential loud or high-pitched sound detected. Check your surroundings; this app cannot identify alarms.";
+            hazardStatus.dataset.kind = "alert";
+            if (shakeAlertToggle.checked) {
+                document.body.dataset.alert = "true";
+                setTimeout(() => {
+                    delete document.body.dataset.alert;
+                }, 1300);
+            }
+            if (navigator.vibrate) {
+                navigator.vibrate([500, 180, 500, 180, 800]);
+            }
+            void flashAlert();
+            setTimeout(() => {
+                if (Date.now() - lastHazardAlert >= 7000 && hazardAnalyser) {
+                    hazardStatus.textContent = "Sound monitoring is on. No recent loud or high-pitched sound detected.";
+                    hazardStatus.dataset.kind = "";
+                }
+            }, 7000);
+        }
+
+        function inspectSound() {
+            if (!hazardAnalyser) {
+                return;
+            }
+            const timeDomain = new Uint8Array(hazardAnalyser.fftSize);
+            const frequencies = new Uint8Array(hazardAnalyser.frequencyBinCount);
+            hazardAnalyser.getByteTimeDomainData(timeDomain);
+            hazardAnalyser.getByteFrequencyData(frequencies);
+
+            let squaredTotal = 0;
+            for (const sample of timeDomain) {
+                const amplitude = (sample - 128) / 128;
+                squaredTotal += amplitude * amplitude;
+            }
+            const rms = Math.sqrt(squaredTotal / timeDomain.length);
+            const binWidth = hazardAudioContext.sampleRate / hazardAnalyser.fftSize;
+            let highFrequencyPeak = 0;
+            for (let index = 0; index < frequencies.length; index += 1) {
+                const frequency = index * binWidth;
+                if (frequency >= 1200 && frequency <= 4500) {
+                    highFrequencyPeak = Math.max(highFrequencyPeak, frequencies[index]);
+                }
+            }
+            const possibleSound = rms > 0.2 || (rms > 0.025 && highFrequencyPeak > 185);
+            consecutiveSoundFrames = possibleSound ? consecutiveSoundFrames + 1 : 0;
+            if (consecutiveSoundFrames >= 3) {
+                consecutiveSoundFrames = 0;
+                announceHazard();
+            }
+        }
+
+        startHazardBtn.addEventListener("click", async () => {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                hazardStatus.textContent = "Microphone monitoring is not available in this browser.";
+                hazardStatus.dataset.kind = "error";
+                return;
+            }
+            startHazardBtn.disabled = true;
+            try {
+                const AudioContextType = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextType) {
+                    throw new Error("Web Audio is not available in this browser.");
+                }
+                hazardStream = await navigator.mediaDevices.getUserMedia({
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+                    video: false
+                });
+                hazardAudioContext = new AudioContextType();
+                await hazardAudioContext.resume();
+                hazardAnalyser = hazardAudioContext.createAnalyser();
+                hazardAnalyser.fftSize = 2048;
+                hazardAnalyser.smoothingTimeConstant = 0.25;
+                hazardAudioContext.createMediaStreamSource(hazardStream).connect(hazardAnalyser);
+                consecutiveSoundFrames = 0;
+                lastHazardAlert = 0;
+                hazardTimer = setInterval(inspectSound, 250);
+                startHazardBtn.hidden = true;
+                stopHazardBtn.hidden = false;
+                hazardStatus.textContent = "Sound monitoring is on. Audio is analyzed on this device and is not recorded or uploaded.";
+                hazardStatus.dataset.kind = "success";
+            } catch (error) {
+                if (hazardStream) {
+                    hazardStream.getTracks().forEach((track) => track.stop());
+                    hazardStream = null;
+                }
+                if (hazardAudioContext) {
+                    void hazardAudioContext.close().catch((closeError) => {
+                        console.error("Could not close the sound monitor:", closeError);
+                    });
+                    hazardAudioContext = null;
+                }
+                hazardAnalyser = null;
+                startHazardBtn.disabled = false;
+                hazardStatus.textContent = `${error.name === "NotAllowedError" ? "Microphone permission was denied." : error.message || "Could not start sound monitoring."} You can use the app without monitoring.`;
+                hazardStatus.dataset.kind = "error";
+            }
+        });
+
+        stopHazardBtn.addEventListener("click", () => {
+            clearInterval(hazardTimer);
+            hazardTimer = null;
+            if (hazardStream) {
+                hazardStream.getTracks().forEach((track) => track.stop());
+                hazardStream = null;
+            }
+            if (hazardAudioContext) {
+                void hazardAudioContext.close().catch((error) => {
+                    console.error("Could not close the sound monitor:", error);
+                });
+                hazardAudioContext = null;
+            }
+            hazardAnalyser = null;
+            if (navigator.vibrate) {
+                navigator.vibrate(0);
+            }
+            startHazardBtn.hidden = false;
+            startHazardBtn.disabled = false;
+            stopHazardBtn.hidden = true;
+            hazardStatus.textContent = "Sound monitoring is off.";
+            hazardStatus.dataset.kind = "";
+        });
+
+        window.addEventListener("pagehide", () => {
+            clearInterval(hazardTimer);
+            if (hazardStream) {
+                hazardStream.getTracks().forEach((track) => track.stop());
+            }
+            if (flashTrack) {
+                flashTrack.stop();
+            }
+            if (hazardAudioContext && hazardAudioContext.state !== "closed") {
+                void hazardAudioContext.close().catch((error) => {
+                    console.error("Could not close the sound monitor during page exit:", error);
+                });
+            }
+        });
+
+        const synth = window.speechSynthesis;
+        const speakBtn = document.getElementById("speak-btn");
+        const textInput = document.getElementById("text-to-speak");
+        const voiceSelect = document.getElementById("voice-select");
+        const speakStatus = document.getElementById("speak-status");
+        const voiceSetupStatus = document.getElementById("voice-setup-status");
+        const voiceNameInput = document.getElementById("voice-name");
+        const voiceFileInput = document.getElementById("voice-file");
+        const samplePreview = document.getElementById("sample-preview");
+        const recordBtn = document.getElementById("record-btn");
+        const stopRecordBtn = document.getElementById("stop-record-btn");
+        const createVoiceBtn = document.getElementById("create-voice-btn");
+        const deleteVoiceBtn = document.getElementById("delete-voice-btn");
+        const voiceConsent = document.getElementById("voice-consent");
+        let voices = [];
+        let currentUtterance = null;
+        let currentAudio = null;
+        let currentAudioUrl = null;
+        let speechRequestController = null;
+        let customVoiceId = localStorage.getItem("openVoice.customVoiceId") || "";
+        let recordedSample = null;
+        let mediaRecorder = null;
+        let mediaStream = null;
+        let recordingChunks = [];
+        let samplePreviewUrl = null;
+
+        function setSpeakStatus(message, kind) {
+            speakStatus.textContent = message;
+            speakStatus.dataset.kind = kind || "";
+        }
+
+        function setVoiceSetupStatus(message, kind) {
+            voiceSetupStatus.textContent = message;
+            voiceSetupStatus.dataset.kind = kind || "";
+        }
+
+        function populateVoiceList() {
+            voices = synth ? synth.getVoices() : [];
+            const previousVoice = voiceSelect.value;
+            voiceSelect.replaceChildren(new Option("System default voice", ""));
+
+            voices.forEach((voice) => {
+                voiceSelect.add(new Option(`${voice.name} (${voice.lang})`, voice.name));
+            });
+
+            if (customVoiceId) {
+                voiceSelect.add(new Option("My cloned voice (online)", "custom"));
+            }
+
+            if (previousVoice === "custom" && customVoiceId) {
+                voiceSelect.value = "custom";
+            } else if (voices.some((voice) => voice.name === previousVoice)) {
+                voiceSelect.value = previousVoice;
+            }
+        }
+
+        function stopSpeaking() {
+            currentUtterance = null;
+            if (synth) {
+                synth.cancel();
+            }
+            if (speechRequestController) {
+                speechRequestController.abort();
+                speechRequestController = null;
+            }
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+                currentAudioUrl = null;
+            }
+            speakBtn.textContent = "Speak message";
+            setSpeakStatus("Speech stopped.", "");
+        }
+
+        async function speakWithCustomVoice(message) {
+            const controller = new AbortController();
+            speechRequestController = controller;
+            speakBtn.textContent = "Stop speaking";
+            setSpeakStatus("Preparing your message with your online voice…", "success");
+
+            try {
+                const response = await fetch("/api/speak", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: message, voiceId: customVoiceId }),
+                    signal: controller.signal
+                });
+                if (!response.ok) {
+                    const result = await response.json();
+                    throw new Error(result.error || `Speech request failed (${response.status}).`);
+                }
+
+                const audioBlob = await response.blob();
+                if (speechRequestController !== controller) {
+                    return;
+                }
+                currentAudioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(currentAudioUrl);
+                currentAudio = audio;
+                audio.addEventListener("ended", () => {
+                    if (currentAudio !== audio) {
+                        return;
+                    }
+                    currentAudio = null;
+                    URL.revokeObjectURL(currentAudioUrl);
+                    currentAudioUrl = null;
+                    speakBtn.textContent = "Speak message";
+                    setSpeakStatus("Finished speaking. Your message is still available to edit or repeat.", "");
+                }, { once: true });
+                audio.addEventListener("error", () => {
+                    if (currentAudio !== audio) {
+                        return;
+                    }
+                    currentAudio = null;
+                    if (currentAudioUrl) {
+                        URL.revokeObjectURL(currentAudioUrl);
+                        currentAudioUrl = null;
+                    }
+                    speakBtn.textContent = "Speak message";
+                    setSpeakStatus("The generated audio could not be played by this browser.", "error");
+                }, { once: true });
+                await audio.play();
+                if (currentAudio !== audio) {
+                    return;
+                }
+                speechRequestController = null;
+                setSpeakStatus("Speaking with your cloned voice.", "success");
+            } catch (error) {
+                if (speechRequestController !== controller) {
+                    return;
+                }
+                speechRequestController = null;
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                if (currentAudioUrl) {
+                    URL.revokeObjectURL(currentAudioUrl);
+                    currentAudioUrl = null;
+                }
+                speakBtn.textContent = "Speak message";
+                setSpeakStatus(error.name === "AbortError" ? "Speech stopped." : error.message, error.name === "AbortError" ? "" : "error");
+            }
+        }
+
+        function speakText() {
+            if (currentUtterance || currentAudio || speechRequestController) {
+                stopSpeaking();
+                return;
+            }
+
+            const message = textInput.value.trim();
+            if (!message) {
+                setSpeakStatus("Type a message first, then choose Speak message.", "error");
+                textInput.focus();
+                return;
+            }
+
+            if (voiceSelect.value === "custom") {
+                void speakWithCustomVoice(message);
+                return;
+            }
+            if (!synth) {
+                setSpeakStatus("Device text-to-speech is not available in this browser. Create and select your online voice instead.", "error");
+                return;
+            }
+
+            synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(message);
+            const selectedVoice = voices.find((voice) => voice.name === voiceSelect.value);
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+
+            currentUtterance = utterance;
+            speakBtn.textContent = "Stop speaking";
+            setSpeakStatus("Preparing your message…", "success");
+            utterance.addEventListener("start", () => {
+                if (currentUtterance !== utterance) {
+                    return;
+                }
+                speakBtn.textContent = "Stop speaking";
+                setSpeakStatus("Speaking your message.", "success");
+            });
+            utterance.addEventListener("end", () => {
+                if (currentUtterance !== utterance) {
+                    return;
+                }
+                currentUtterance = null;
+                speakBtn.textContent = "Speak message";
+                setSpeakStatus("Finished speaking. Your message is still available to edit or repeat.", "");
+            });
+            utterance.addEventListener("error", (event) => {
+                if (currentUtterance !== utterance) {
+                    return;
+                }
+                currentUtterance = null;
+                speakBtn.textContent = "Speak message";
+                setSpeakStatus(`Could not speak this message: ${event.error}.`, "error");
+            });
+
+            synth.speak(utterance);
+        }
+
+        function setSamplePreview(blob) {
+            if (samplePreviewUrl) {
+                URL.revokeObjectURL(samplePreviewUrl);
+            }
+            samplePreviewUrl = URL.createObjectURL(blob);
+            samplePreview.src = samplePreviewUrl;
+            samplePreview.hidden = false;
+        }
+
+        function getSupportedAudioMimeType(file) {
+            const supportedTypes = new Set(["audio/webm", "audio/ogg", "audio/wav", "audio/x-wav", "audio/mpeg", "audio/mp3", "audio/mp4", "audio/aac"]);
+            const detectedType = (file.type || "").split(";")[0].toLowerCase();
+            if (supportedTypes.has(detectedType)) {
+                return detectedType;
+            }
+
+            const extension = file.name.toLowerCase().split(".").pop();
+            const typesByExtension = {
+                webm: "audio/webm",
+                ogg: "audio/ogg",
+                wav: "audio/wav",
+                mp3: "audio/mpeg",
+                m4a: "audio/mp4",
+                aac: "audio/aac"
+            };
+            return typesByExtension[extension] || "";
+        }
+
+        voiceFileInput.addEventListener("change", () => {
+            recordedSample = null;
+            const file = voiceFileInput.files && voiceFileInput.files[0];
+            if (!file) {
+                samplePreview.hidden = true;
+                return;
+            }
+            if (!getSupportedAudioMimeType(file)) {
+                voiceFileInput.value = "";
+                setVoiceSetupStatus("Choose an MP3, WAV, M4A, AAC, OGG, or WebM audio recording.", "error");
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                voiceFileInput.value = "";
+                samplePreview.hidden = true;
+                setVoiceSetupStatus("The recording must be 10 MB or smaller.", "error");
+                return;
+            }
+            setSamplePreview(file);
+            setVoiceSetupStatus(`Recording ready: ${file.name}.`, "");
+        });
+
+        recordBtn.addEventListener("click", async () => {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+                setVoiceSetupStatus("This browser cannot record audio. Choose an existing audio file instead.", "error");
+                return;
+            }
+
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/ogg"]
+                    .find((type) => MediaRecorder.isTypeSupported(type));
+                mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
+                recordingChunks = [];
+                recordedSample = null;
+                voiceFileInput.value = "";
+                samplePreview.hidden = true;
+                mediaRecorder.addEventListener("dataavailable", (event) => {
+                    if (event.data.size) {
+                        recordingChunks.push(event.data);
+                    }
+                });
+                mediaRecorder.addEventListener("stop", () => {
+                    recordedSample = new Blob(recordingChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+                    mediaStream.getTracks().forEach((track) => track.stop());
+                    mediaStream = null;
+                    recordBtn.disabled = false;
+                    recordBtn.textContent = "Record again";
+                    stopRecordBtn.disabled = true;
+                    setSamplePreview(recordedSample);
+                    setVoiceSetupStatus("Recording ready. Play it back to check the sound before creating your voice.", "");
+                }, { once: true });
+                mediaRecorder.addEventListener("error", () => {
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach((track) => track.stop());
+                        mediaStream = null;
+                    }
+                    recordBtn.disabled = false;
+                    stopRecordBtn.disabled = true;
+                    setVoiceSetupStatus("The browser could not record audio. Choose an audio file instead.", "error");
+                }, { once: true });
+                mediaRecorder.start();
+                recordBtn.disabled = true;
+                stopRecordBtn.disabled = false;
+                setVoiceSetupStatus("Recording. Speak clearly, then choose Stop recording.", "success");
+            } catch (error) {
+                setVoiceSetupStatus(error.name === "NotAllowedError"
+                    ? "Microphone access was denied. Allow it in your browser settings, or choose an audio file."
+                    : "Could not start recording. Check your microphone or choose an audio file.", "error");
+            }
+        });
+
+        stopRecordBtn.addEventListener("click", () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+            }
+        });
+
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = "";
+            const chunkSize = 0x8000;
+            for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+                binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+            }
+            return btoa(binary);
+        }
+
+        createVoiceBtn.addEventListener("click", async () => {
+            if (customVoiceId) {
+                setVoiceSetupStatus("Delete your current cloned voice before creating a replacement.", "error");
+                return;
+            }
+            const sample = recordedSample || (voiceFileInput.files && voiceFileInput.files[0]);
+            if (!sample) {
+                setVoiceSetupStatus("Record a voice sample or choose an audio file first.", "error");
+                return;
+            }
+            if (!voiceConsent.checked) {
+                setVoiceSetupStatus("Confirm that you own this voice or have permission to clone it.", "error");
+                return;
+            }
+
+            createVoiceBtn.disabled = true;
+            setVoiceSetupStatus("Sending your sample to ElevenLabs to create your voice…", "success");
+            try {
+                const audioBase64 = arrayBufferToBase64(await sample.arrayBuffer());
+                const response = await fetch("/api/clone", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: voiceNameInput.value.trim(),
+                        mimeType: getSupportedAudioMimeType(sample),
+                        audioBase64
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || `Voice creation failed (${response.status}).`);
+                }
+
+                customVoiceId = result.voiceId;
+                localStorage.setItem("openVoice.customVoiceId", customVoiceId);
+                populateVoiceList();
+                voiceSelect.value = "custom";
+                deleteVoiceBtn.hidden = false;
+                setVoiceSetupStatus(result.requiresVerification
+                    ? "Voice created. ElevenLabs requires verification before it can be used."
+                    : "Your voice is ready. Select “My cloned voice (online)” to speak with it.", "success");
+            } catch (error) {
+                setVoiceSetupStatus(error.message || "Could not create your voice. Please try again.", "error");
+            } finally {
+                createVoiceBtn.disabled = false;
+            }
+        });
+
+        deleteVoiceBtn.addEventListener("click", async () => {
+            if (!customVoiceId || !window.confirm("Delete this cloned voice from your ElevenLabs account? This cannot be undone.")) {
+                return;
+            }
+
+            deleteVoiceBtn.disabled = true;
+            setVoiceSetupStatus("Deleting your cloned voice from ElevenLabs…", "success");
+            try {
+                const response = await fetch(`/api/voices/${encodeURIComponent(customVoiceId)}`, { method: "DELETE" });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || `Voice deletion failed (${response.status}).`);
+                }
+                stopSpeaking();
+                localStorage.removeItem("openVoice.customVoiceId");
+                customVoiceId = "";
+                populateVoiceList();
+                deleteVoiceBtn.hidden = true;
+                setVoiceSetupStatus("Cloned voice deleted from ElevenLabs and removed from this browser.", "success");
+            } catch (error) {
+                setVoiceSetupStatus(error.message || "Could not delete the cloned voice. Please try again.", "error");
+            } finally {
+                deleteVoiceBtn.disabled = false;
+            }
+        });
+
+        populateVoiceList();
+        deleteVoiceBtn.hidden = !customVoiceId;
+        if (synth && "onvoiceschanged" in synth) {
+            synth.addEventListener("voiceschanged", populateVoiceList);
+        }
+
+        speakBtn.addEventListener("click", speakText);
+        textInput.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                speakText();
+            }
+        });
+
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js")
+                .then(() => {
+                    offlineStatus.textContent = "App shell and images are cached for later offline visits. Browser support determines whether speech recognition also works offline.";
+                })
+                .catch((error) => {
+                    offlineStatus.textContent = "Could not enable offline app caching. Keep a connection available.";
+                    console.error("Could not register the offline app shell:", error);
+                });
+        } else {
+            offlineStatus.textContent = "This browser does not support offline app caching.";
+        }
+    </script>
+</body>
+</html>
